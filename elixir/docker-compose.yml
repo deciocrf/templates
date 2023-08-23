@@ -1,0 +1,40 @@
+services:
+    api:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                USER_ID: ${drk:-1000}
+                GROUP_ID: ${drk:-1000}
+        environment:
+            PGUSER: postgres
+            PGPASSWORD: postgres
+            PGDATABASE: street_rules_api_dev
+            PGHOST: localhost
+            PGPORT: 5432
+        ports:
+            - "4000:4000"
+        depends_on:
+            - db
+        volumes:
+            - deps:/home/api_user/app/deps
+            - build:/home/api_user/app/_build
+            # Explicitly excludes _build and deps directories from bind mounts
+            - ./config:/home/api_user/app/config
+            - ./lib:/home/api_user/app/lib
+            - ./priv:/home/api_user/app/priv
+            - ./test:/home/api_user/app/test
+            - ./entrypoint.sh:/home/api_user/app/entrypoint.sh
+            - ./mix.exs:/home/api_user/app/mix.exs
+            - ./mix.lock:/home/api_user/app/mix.lock
+            - ./.formatter.exs:/home/api_user/app/.formatter.exs
+        command:
+            - "./entrypoint.sh"
+    db:
+        image: postgres:15.1
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+volumes:
+    deps:
+    build:
